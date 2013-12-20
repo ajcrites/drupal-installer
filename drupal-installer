@@ -1,0 +1,49 @@
+#!/bin/bash -e
+if [[ ! -f /bin/which ]]; then
+    which () {
+        whereis $1 | sed "s/$1://"
+    }
+else
+    which () {
+        /bin/which $1
+    }
+fi
+
+if [[ -n $(which apt-get) ]]; then
+    installer="sudo apt-get install"
+elif [[ -n $(which brew) ]]; then
+    installer="brew install"
+else
+    echo 'Cannot find installer `apt-get` or `brew`'
+    echo 'If components are missing, I may not be able to install them'
+fi
+
+if [[ -z $(which wget) ]]; then
+    if [[ -z $(which curl) ]]; then
+        $installer wget
+        downloader=wget
+        header="wget -S -qO-"
+    else
+        downloader="curl -O"
+        header="curl -I"
+    fi
+else
+    header="wget -S -qO-"
+    downloader=wget
+fi
+
+# FIXME update to handle arguments better
+# Allow setting of drupal version, target, and subdomain
+$downloader http://ftp.drupal.org/files/projects/drupal-7.24.tar.gz
+tar --extract --gzip --file drupal-7.24.tar.gz
+mv drupal-7.24 $1
+rm drupal-7.24.tar.gz
+
+sudo ./mksubdomain $1
+sudo service apache2 restart
+if [[ -n $($header http://${1}.localhost | \grep "200 OK") ]]; then
+    echo "Website appears to be up and running."
+    google-chrome http://${1}.localhost/install.php
+else
+    echo "Website is not returning 200 for index page.  Ack!"
+fi
