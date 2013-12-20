@@ -33,7 +33,7 @@ else
 fi
 
 # MySQL handling
-sudo service mysql start
+sudo service mysql start || true
 
 # FIXME update to handle arguments better
 # Allow setting of drupal version, target, and subdomain
