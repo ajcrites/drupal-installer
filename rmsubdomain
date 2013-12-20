@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Remove a subdomain by undoing result of mksubdomain instructions
+# This must be run with `sudo`
+
+sed -i "/127.0.0.1.*${1}.localhost/d" /etc/hosts
+rm /etc/apache2/sites-available/${1}.conf
+rm /etc/apache2/sites-enabled/${1}.conf
