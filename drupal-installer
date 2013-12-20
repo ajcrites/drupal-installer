@@ -25,7 +25,7 @@ if [[ -z $(which wget) ]]; then
         header="wget -S -qO-"
     else
         downloader="curl -O"
-        header="curl -I"
+        header="curl -IL"
     fi
 else
     header="wget -S -qO-"
@@ -41,7 +41,8 @@ rm drupal-7.24.tar.gz
 
 sudo ./mksubdomain $1
 sudo service apache2 restart
-if [[ -n $($header http://${1}.localhost | \grep "200 OK") ]]; then
+# wget outputs headers to stderr
+if [[ -n $($header http://${1}.localhost 2>&1 | \grep "200 OK") ]]; then
     echo "Website appears to be up and running."
     google-chrome http://${1}.localhost/install.php
 else
