@@ -32,6 +32,9 @@ else
     downloader=wget
 fi
 
+# MySQL handling
+sudo service mysql start
+
 # FIXME update to handle arguments better
 # Allow setting of drupal version, target, and subdomain
 $downloader http://ftp.drupal.org/files/projects/drupal-7.24.tar.gz
