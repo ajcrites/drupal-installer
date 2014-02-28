@@ -35,19 +35,41 @@ fi
 # MySQL handling
 sudo service mysql start || true
 
+if [ -z "$1" ]; then
+    read -p "Specify subdomain name: " domain
+else
+    domain=$1
+fi
+
+if [ -z "$2" ]; then
+    read -p "Specify the drupal version to install (7.26): " druverzh
+else
+    $druverzh=$2
+fi
+druverzh=${druverzh:-"7.26"}
+
+if [ -z "$3" ]; then
+    read -p "Specify the document root: " docroot
+else
+    docroot=$3
+fi
+mkdir -p $docroot
+
 # FIXME update to handle arguments better
 # Allow setting of drupal version, target, and subdomain
-$downloader http://ftp.drupal.org/files/projects/drupal-7.24.tar.gz
-tar --extract --gzip --file drupal-7.24.tar.gz
-mv drupal-7.24 $1
-rm drupal-7.24.tar.gz
+$downloader http://ftp.drupal.org/files/projects/drupal-${druverzh}.tar.gz
+tar --extract --gzip --file drupal-${druverzh}.tar.gz
 
-sudo ./mksubdomain $1
+cp -r drupal-${druverzh}/* $docroot
+rm -rf drupal-${druverzh}*
+
+sudo ./mksubdomain $domain $docroot
 sudo service apache2 restart
 # wget outputs headers to stderr
-if [[ -n $($header http://${1}.localhost 2>&1 | \grep "200 OK") ]]; then
+if [[ -n $($header http://${domain}.localhost 2>&1 | \grep "200 OK") ]]; then
     echo "Website appears to be up and running."
-    google-chrome http://${1}.localhost/install.php
+    echo "You should be all set."
+    google-chrome http://${domain}.localhost/install.php
 else
     echo "Website is not returning 200 for index page.  Ack!"
 fi
